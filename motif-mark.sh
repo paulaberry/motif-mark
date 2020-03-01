@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-./modtif-mark.py -f test.fa
+conda activate pycairo
+./motif-mark.py -f test.fa -m Fig_1_motifs.txt
