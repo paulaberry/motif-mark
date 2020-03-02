@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 import argparse
-import gzip
 import cairo
 import re
 import os
-import matplotlib
 from matplotlib import cm
-import numpy as np
 
 def get_args():
     """Function to pass in the FASTA file, motif list, and output options."""
@@ -65,7 +62,6 @@ def regex_string(motif):
             value_regex = value_regex + "[AGCTUN]"
         else:
             value_regex = value_regex + i
-    #value_regex = value_regex + ")"
     return(value_regex)
 
 def exonlength(sequence):
@@ -78,12 +74,10 @@ def exonlength(sequence):
 def motif_location(motif, sequence, dictionary):
     """A function that takes in a motif, a FASTA sequence as a string, and an empty list to populate with the coordinates of the motif found."""
     coord_list = []
-    p = re.compile(dictionary[key][0])
+    p = re.compile(dictionary[motif][0])
     for match in p.finditer(sequence):  # Search for the motif in the sequence
         coord_list.append(match.start())
-    #print(coord_list)
-    if coord_list == []:
-        #print(coord_list)
+    if coord_list == []: # if no matches for the motif
         return coord_list
     else:
         list_count = 0
@@ -91,8 +85,43 @@ def motif_location(motif, sequence, dictionary):
             scaled_coord = int((i / len(sequence)) * 1000)
             coord_list[list_count] = scaled_coord
             list_count = list_count + 1
-        #print(coord_list)
         return coord_list
+
+def fasta_process(fasta, dictionary):
+    """A function that takes in a fasta file object, and an empty dictionary, and populates the dictionary with the fasta headers as keys and a list of the fasta sequence and a scalar as the value. Returns the count of fasta files"""
+    fasta_file = open(fasta, "r")
+    sequence =""
+    counter = 0
+    for line in fasta_file:
+        line = line.strip()
+        if counter == 0: # special case for first loop through
+            header = line[1:]
+            dictionary[header] = []
+            counter = counter + 1
+
+        elif line[0] == ">": # this works for all except very first one
+            dictionary[header].append(sequence) # as soon as hit the next header line store sequence in previous header value
+            sequence = "" # clear the sequence
+            header = line[1:]
+            dictionary[header] = [] # store the next header as a key
+            counter = counter + 1
+
+        else: # build the sequence
+            sequence = sequence + line
+
+    dictionary[header].append(sequence) # store the last sequence
+    fasta_file.close()
+
+    # Find scalars for sequences
+    max_seq = 0
+    for i in dictionary:
+        dictionary[i].append(len(dictionary[i][0]))
+        max_seq = max(dictionary[i][1], max_seq)
+    for i in dictionary:
+        dictionary[i][1] = dictionary[i][1] / max_seq
+
+
+    return len(dictionary)
 
 
 
@@ -110,27 +139,15 @@ for motif in motif_file:
 motif_file.close()
 
 # Populate dictionary with RGB value tuples
-color_step = 255 // motif_count
+color_step = int(255 / motif_count)
 color_n = 0
 for key in motif_dictionary:
     motif_dictionary[key].append(getattr(cm, colormap)(color_n))
     color_n = color_n + color_step
 
-#print(motif_dictionary)
-
-
-
 # Input FASTA file, count fasta entries
-fasta_file = open(fastafile, "r")
-fasta_count = 0
-fasta_line = fasta_file.readline(0)
-for fasta_line in fasta_file:
-    fasta_line = fasta_line.strip()
-    if fasta_line.startswith(">"):
-        fasta_count = fasta_count + 1
-fasta_file.close()
-
-#print(fasta_count)
+fasta_dict = {}
+fasta_count = fasta_process(fastafile, fasta_dict)
 
 # Initialize canvas
 canvas_height = (fasta_count * 100) + 160 + (30 * motif_count)
@@ -154,104 +171,40 @@ with cairo.SVGSurface(img_filename, 1100, canvas_height) as surface:
         context.move_to(80, legend_line)
         context.show_text(key)
 
-    fasta = open(fastafile, "r") # start reading in fasta entries
-    sequence = ""
-    counter = 0
-    draw_line = legend_line + 100
-    for line in fasta:
-        line = line.strip()
-        if counter == 0: # special case for first loop through
-            header = line[1:]
-            counter = counter + 1
+    draw_line = legend_line + 100 # start the diagrams 100 pixels below the legend
+    for key in fasta_dict:
+        header = key
+        sequence = fasta_dict[key][0]
+        exon_start, exon_stop = exonlength(sequence) # generate coordinates for exon(s)
 
-        elif line[0] == ">" or line == "": # here's where we start drawing
-            # generate coordinates for exon
-            exon_start, exon_stop = exonlength(sequence)
+        # draw using the coordinates
+        draw_strand = int(draw_line + 30)
+        context.set_source_rgb(0, 0, 0)
+        context.move_to(20, draw_line)
+        context.show_text(header) # draw gene text label
+        context.move_to(50, draw_strand)
+        context.line_to(int(50 + (fasta_dict[key][1] * 1000)), draw_strand)
+        context.set_source_rgba(0, 0, 0, .7)
+        context.set_line_width(5)
+        context.stroke() # draw whole sequence span
+        context.move_to(50 + int(fasta_dict[key][1] * exon_start), draw_strand)
+        context.line_to(50 + int(fasta_dict[key][1] * exon_stop), draw_strand)
+        context.set_source_rgb(0, 0, 0)
+        context.set_line_width(20)
+        context.stroke() # draw exon(s)
 
-            # draw using the coordinates
-            draw_strand = int(draw_line + 30)
-            context.set_source_rgb(0, 0, 0)
-            context.move_to(20, draw_line)
-            context.show_text(header)
-            context.move_to(50, draw_strand)
-            context.line_to(1050, draw_strand)
-            context.set_source_rgba(0, 0, 0, .7)
-            context.set_line_width(5)
-            context.stroke()
-            context.move_to(50 + exon_start, draw_strand)
-            context.line_to(50 + exon_stop, draw_strand)
-            context.set_source_rgb(0, 0, 0)
-            context.set_line_width(20)
-            context.stroke()
-
-            # generate list of motif coordinates
-            for key in motif_dictionary:
-                motif_len = int((len(key) / len(sequence)) * 1000)
-                #print(motif_len)
-                motif_coords = motif_location(key, sequence, motif_dictionary)
-                if motif_coords != []:
-                    for i in motif_coords:
-                        context.move_to(50 + i, draw_strand)
-                        context.line_to(50 + i + motif_len, draw_strand)
-                        context.set_source_rgba(motif_dictionary[key][1][0], motif_dictionary[key][1][1], motif_dictionary[key][1][2], .7)
-                        context.set_line_width(20)
-                        context.stroke()
+        # generate list of motif coordinates
+        for x in motif_dictionary:
+            motif_len = int((len(x) / len(sequence)) * 1000 * fasta_dict[key][1])
+            motif_coords = motif_location(x, sequence, motif_dictionary)
+            if motif_coords != []:
+                for i in motif_coords:
+                    context.move_to(50 + int(i * fasta_dict[key][1]), draw_strand)
+                    context.line_to(50 + int(i * fasta_dict[key][1]) + motif_len, draw_strand)
+                    context.set_source_rgba(motif_dictionary[x][1][0], motif_dictionary[x][1][1], motif_dictionary[x][1][2], 1)
+                    context.set_line_width(20)
+                    context.stroke()
 
 
-            draw_line = draw_line + 100
-            sequence = "" # clear the sequence
-            header = line[1:]
-
-        else: # build the sequence
-            sequence = sequence + line
-    fasta.close()
-    # generate coordinates for last exon
-    exon_start, exon_stop = exonlength(sequence)
-
-    # draw using the coordinates
-    draw_strand = int(draw_line + 30)
-    context.set_source_rgb(0, 0, 0)
-    context.move_to(20, draw_line)
-    context.show_text(header)
-    context.move_to(50, draw_strand)
-    context.line_to(1050, draw_strand)
-    context.set_source_rgba(0, 0, 0, .7)
-    context.set_line_width(5)
-    context.stroke()
-    context.move_to(50 + exon_start, draw_strand)
-    context.line_to(50 + exon_stop, draw_strand)
-    context.set_source_rgb(0, 0, 0)
-    context.set_line_width(20)
-    context.stroke()
-
-    # generate list of motif coordinates
-    for key in motif_dictionary:
-        motif_len = int((len(key) / len(sequence)) * 1000)
-        #print(motif_len)
-        motif_coords = motif_location(key, sequence, motif_dictionary)
-        if motif_coords != []:
-            for i in motif_coords:
-                context.move_to(50 + i, draw_strand)
-                context.line_to(50 + i + motif_len, draw_strand)
-                context.set_source_rgba(motif_dictionary[key][1][0], motif_dictionary[key][1][1], motif_dictionary[key][1][2], .7)
-                context.set_line_width(20)
-                context.stroke()
-
-#if img_filename[-3] == "png":
-    #surface.write_to_png(img_filename)
-#elif img_filename[-3] == "pdf":
-
-
+        draw_line = draw_line + 100
 surface.finish()
-
-# Loop here
-    # input FASTA entry
-        #Create single line FASTA
-
-    # Initialize canvas, calculate each gene position on canvas
-    # create labelfor the gene
-    # search string
-        # calculate length/position of exon(s)
-    # search string
-        # calculate position of motifs
-    # draw gene and motifs
