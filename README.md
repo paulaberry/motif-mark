@@ -1,7 +1,7 @@
 # Motif-Mark
 A sequence motif is a short nucleotide pattern that is widespread, conserved across organisms, and often has (or is confirmed to have) biological significance. Commonly they are protein binding sites and involved in gene expression regulation. Locating motifs on DNA sequences is complicated by the fact that many can have more than one nucleotide at certain positions, and motifs may be overlapping.
 
-This script helps visualize motifs present in genetic sequence files, to provide insight into possible sites of gene regulation.
+This script helps visualize **up to eight (8)** motifs present in genetic sequence files, to provide insight into possible sites of gene regulation. All sequences and motifs are to scale with themselves and with each other.
 
 ## Quick Start
 Inputs:
@@ -18,3 +18,17 @@ Required modules:
 * [Pycairo](https://pypi.org/project/pycairo/)
 * re (standard library)
 * argparse (standard library)
+
+## Options
+
+### Output
+The default output filetype is an SVG file. setting the `-o` flag will allow the user to specify the output format they want.
+
+Available formats and commands:
+* SVG (default)
+* PDF `-o pdf`
+* PNG `-o png`
+* PostScript `-o ps`
+
+### Custom Colors and Palettes
+Motif-mark offers
