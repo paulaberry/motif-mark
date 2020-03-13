@@ -28,7 +28,21 @@ Available formats and commands:
 * SVG (default)
 * PDF `-o pdf`
 * PNG `-o png`
-* PostScript `-o ps`
 
 ### Custom Colors and Palettes
-Motif-mark offers
+Motif-mark offers the ability to hand-pick colors or from a pre-set palette. The custom colors available are shown below in Figure 1. Colors and palettes are generated from MatPlotLib's named color library and select colormaps, shown in Figure 2. If the figure will be printed in black and white or monochrome, it is recommended that you use viridis or plasma as they provide distinction between motifs using darkness/lightness as well as hue.
+
+<b>Available palettes:</b>
+* viridis (color vision-deficient safe/perceptually uniform)
+* plasma (color vision-deficient safe/perceptually uniform)
+* jet
+* gist_rainbow
+* rainbow
+* set1
+* cvd_safe (color vision-deficient safe)
+
+Sample code using custom colors: `./motif-mark.py -f /path/to/FASTAFILE.fa -m /path/to/MOTIFFILE.txt -c firebrick orangered forestgreen midnightblue`
+
+Sample code using palettes: `./motif-mark.py -f /path/to/FASTAFILE.fa -m /path/to/MOTIFFILE.txt -c viridis`
+
+ ![Custom Colors](images/namedcolors.png)

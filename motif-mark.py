@@ -2,7 +2,6 @@
 import argparse
 import cairo
 import re
-#from matplotlib import cm
 import subprocess
 
 def get_args():
@@ -28,7 +27,7 @@ for i in colormap:
     colormap_count = colormap_count + 1
 
 
-filetype = str(args.output)
+filetype = str.lower(args.output)
 if filetype.startswith(".") == False:
     filetype = "." + filetype
 
@@ -209,8 +208,17 @@ fasta_count = fasta_process(fastafile, fasta_dict) # also populates fasta_dict
 canvas_height = (fasta_count * 100) + 160 + (30 * motif_count)
 img_filename = fastafile.split(".")[0] + "_motifs" + filetype
 
-surface = cairo.SVGSurface(img_filename, 1100, canvas_height)
+if filetype == ".png":
+    surface = cairo.ImageSurface(cairo.FORMAT_RGB24, 1100, canvas_height)
+elif filetype == ".pdf":
+    surface = cairo.PDFSurface(img_filename, 1100, canvas_height)
+
+else:
+    surface = cairo.SVGSurface(img_filename, 1100, canvas_height)
 context = cairo.Context(surface)
+context.rectangle(0, 0, 1100, canvas_height)
+context.set_source_rgb(1, 1, 1)
+context.fill()
 context.set_source_rgb(0, 0, 0)
 context.select_font_face("Georgia", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 context.set_font_size(13)
@@ -268,5 +276,11 @@ for key in fasta_dict:
 
 
     draw_line = draw_line + 100
-surface.finish()
-print(motif_dictionary)
+
+
+if filetype == ".png":
+    surface.write_to_png(img_filename)
+elif filetype == ".pdf":
+    surface.show_page()
+else:
+    surface.finish()
