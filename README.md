@@ -5,9 +5,9 @@ This script helps visualize **up to eight (8)** motifs present in genetic sequen
 
 ## Quick Start
 Inputs:
-1. A properly formatted FASTA file. This should be a "soft-masked" file, with exons being in uppercase and introns or repeating sequences in lower case. An example may be viewed [here](test.fa "Example soft-masked FASTA file").
+1. A properly formatted FASTA file. This should be a "soft-masked" file, with exons being in uppercase and introns or repeating sequences in lower case. An example may be viewed [here](sample_files/test.fa "Example soft-masked FASTA file").
 
-2. A list of motifs (up to 8) to search for. Each motif should be on its own line. An example of a motif list may be viewed [here](Fig_1_motifs.txt "Example Motif File").
+2. A list of motifs (up to 8) to search for. Each motif should be on its own line. An example of a motif list may be viewed [here](sample_files/Fig_1_motifs.txt "Example Motif File").
 
 3. To run Motif-Mark on default settings:<br>
 `./motif-mark.py -f /path/to/FASTAFILE.fa -m /path/to/MOTIFFILE.txt`
