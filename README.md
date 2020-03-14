@@ -12,12 +12,17 @@ Inputs:
 3. To run Motif-Mark on default settings:<br>
 `./motif-mark.py -f /path/to/FASTAFILE.fa -m /path/to/MOTIFFILE.txt`
 
+Motif-mark will save the image output in the same directory as the original FASTA file.
+
 Default settings produce a vector-based (SVG) image (FASTAFILE_motifs.svg) on a light background that uses a color palette based on viridis from MatPlotLib.
 
 Required modules:
 * [Pycairo](https://pypi.org/project/pycairo/)
 * re (standard library)
 * argparse (standard library)
+
+Sample output:
+![Sample Motif-mark output using default settings](images/test_motifs.svg)
 
 ## Options
 
@@ -41,8 +46,10 @@ Motif-mark offers the ability to hand-pick colors or from a pre-set palette. The
 * set1
 * cvd_safe (color vision-deficient safe)
 
-Sample code using custom colors: `./motif-mark.py -f /path/to/FASTAFILE.fa -m /path/to/MOTIFFILE.txt -c firebrick orangered forestgreen midnightblue`
+Sample code using four custom colors: `./motif-mark.py -f /path/to/FASTAFILE.fa -m /path/to/MOTIFFILE.txt -c firebrick orangered forestgreen midnightblue`
 
 Sample code using palettes: `./motif-mark.py -f /path/to/FASTAFILE.fa -m /path/to/MOTIFFILE.txt -c viridis`
 
  ![Custom Colors](images/namedcolors.png)
+
+ ![Pre-set Color Palettes](images/palettes.png)

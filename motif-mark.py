@@ -9,7 +9,7 @@ def get_args():
     getfiles = argparse.ArgumentParser(description="A program to find and visually display motifs in genomes.")
     getfiles.add_argument("-f", "--fastafile", help = "FASTA file to be parsed", required = True)
     getfiles.add_argument("-m", "--motiffile", help = "file with list of motifs to mark", required = True)
-    getfiles.add_argument("-c", "--colormap", help = "specifies which matplotlib color map to use for motifs (default: jet)", nargs = "*", required = False, default = "jet")
+    getfiles.add_argument("-c", "--colormap", help = "specifies which matplotlib color map to use for motifs (default: viridis)", nargs = "*", required = False, default = "viridis")
     getfiles.add_argument("-o", "--output", help = "specifies output filetype (default:svg)", required = False, default = "svg")
     return getfiles.parse_args()
 args = get_args()
@@ -19,14 +19,20 @@ fastafile = str(args.fastafile)
 motiflist = str(args.motiffile)
 
 # optional arguments
-colormap = list(args.colormap)
+# set up colors
+if str(args.colormap).find(" ") != -1:
+    colormap = list(args.colormap)
+elif str(args.colormap) == "viridis":
+    colormap=[str(args.colormap)]
+else:
+    colormap = [str(args.colormap)[2:-2]]
 
 colormap_count = 0
 for i in colormap:
     colormap[colormap_count] = str.lower(i)
     colormap_count = colormap_count + 1
 
-
+# set output type
 filetype = str.lower(args.output)
 if filetype.startswith(".") == False:
     filetype = "." + filetype
@@ -48,12 +54,16 @@ custom = False
 
 # confirm valid color option input
 if len(colormap) == 1: # check if colormap is valid
-    mapstring = "viridisplasmajetgist_rainbowrainbowset1cvd_safe"
-    cvdstring = "cvd_safe"
-    if mapstring.find(colormap[0]) != -1:
-        if cvdstring.find(colormap[0]) != -1:
-            custom = True
+    mapstring = "viridisplasmajetgist_rainbow"
+    cvdstring= "cvd_safeset1"
+    #print(colormap)
+    #print(type(colormap[0]))
+    if colormap[0] in mapstring:
+        #print("found it!")
         colormap = palettes[colormap[0]]
+    elif colormap[0] in cvdstring:
+        colormap = palettes[colormap[0]]
+        custom = True
     else:
         color_list = []
         for i in colormap:
@@ -183,17 +193,17 @@ for motif in motif_file:
 motif_file.close()
 
 # Populate dictionary with RGB value tuples
-if motif_count == 2:
-    color_step = 7
+if custom == True:
+    color_step = 1
+elif motif_count == 2:
+    color_step = 8
 elif motif_count == 3:
-    color_step = 3
+    color_step = 4
 elif motif_count == 4:
     color_step = 2
 else:
     color_step = 1
 
-if custom == True:
-    color_step = 1
 
 color_n = 0
 for key in motif_dictionary:
