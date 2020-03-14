@@ -48,7 +48,7 @@ Motif-mark offers the ability to hand-pick colors or from a pre-set palette. The
 
 Sample code using four custom colors: `./motif-mark.py -f /path/to/FASTAFILE.fa -m /path/to/MOTIFFILE.txt -c firebrick orangered forestgreen midnightblue`
 
-Sample code using palettes: `./motif-mark.py -f /path/to/FASTAFILE.fa -m /path/to/MOTIFFILE.txt -c viridis`
+Sample code using palettes: `./motif-mark.py -f /path/to/FASTAFILE.fa -m /path/to/MOTIFFILE.txt -c jet`
 
  ![Custom Colors](images/namedcolors.png)
 
